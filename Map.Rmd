@@ -72,6 +72,11 @@ pal6 <-colorBin("BuGn", bins = c(0, 5, 10, 15, 23),  domain = Municip$GLP)
 
 labelsGPS <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "15 - 19.99", "20 - 24.99", "Over 25")
 labelsSP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "15 - 19.99", "20 - 24.99", "Over 25")
+labelsFDP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "15 - 19.99", "20 - 24.99", "Over 25")
+labelsSVP <-c("0 - 9.99", "10 - 19.99", "20 - 29.99", "30 - 39.99", "40 - 49.99", "Over 50")
+labelsCVP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "15 - 19.99", "20 - 24.99", "Over 25")
+labelsGLP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "Over 15")
+
 
 ```
 
@@ -93,9 +98,20 @@ MunicipMAP <-leaflet(MunicipVote) %>%
               fillColor = ~pal6(GLP), fillOpacity = 0.8, group ="GLP") %>%
   addLegend("topright", pal = pal1, values = ~GPS, title = "Vote Share Greens", 
           opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsGPS)}, group="GPS")  %>%
+ addLegend("topright", pal = pal2, values = ~SP, title = "Vote Share SP", 
+          opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsSP)}, group="SP")  %>% 
+addLegend("topright", pal = pal3, values = ~FDP, title = "Vote Share FDP", 
+          opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsFDP)}, group="FDP")  %>%
+addLegend("topright", pal = pal4, values = ~SVP, title = "Vote Share SVP", 
+          opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsSVP)}, group="SVP")  %>% 
+  addLegend("topright", pal = pal5, values = ~CVP, title = "Vote Share CVP", 
+          opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsCVP)}, group="CVP")  %>% 
+  addLegend("topright", pal = pal6, values = ~GLP, title = "Vote Share GLP", 
+          opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsGLP)}, group="GLP")  %>% 
   addLayersControl(
-    baseGroups = c("SVP", "SP", "FDP", "GPS", "CVP", "GLP"),
-    options = layersControlOptions(collapsed = FALSE))
+    overlayGroups = c("SVP", "SP", "FDP", "GPS", "CVP", "GLP"),
+    options = layersControlOptions(collapsed = TRUE))  %>%
+    hideGroup(c("SP", "FDP", "GPS", "CVP", "GLP"))
 ```
 
 
