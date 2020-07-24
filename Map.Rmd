@@ -43,15 +43,17 @@ Municip <- slice(Municip, 4:n())
 Municip <- rename(Municip, BFS_NUMMER = `Number of commune`)
 Municip <- rename(Municip, Name = `Name of commune`)
 Municip <- rename(Municip, FDP = `FDP/PLR 4)`)
+Municip <- rename(Municip, EVP = `EVP/CSP`)
 
 #Transform Party Variables to Numeric 
-Municip$SP %<>% as.integer
-Municip$CVP %<>% as.integer
-Municip$SVP %<>% as.integer
-Municip$GLP %<>% as.integer
-Municip$GPS %<>% as.integer
-Municip$BDP %<>% as.integer
-Municip$FDP %<>% as.integer
+Municip$SP %<>% as.numeric(as.character())
+Municip$CVP %<>% as.numeric(as.character())
+Municip$SVP %<>% as.numeric(as.character())
+Municip$GLP %<>% as.numeric(as.character())
+Municip$GPS %<>% as.numeric(as.character())
+Municip$BDP %<>% as.numeric(as.character())
+Municip$FDP %<>% as.numeric(as.character())
+Municip$EVP %<>% as.numeric(as.character())
 ```
 
 
@@ -62,22 +64,40 @@ MunicipVote  <-merge(Swiss, Municip, by = "BFS_NUMMER")
 
 
 ```{r Create Color Overlays, echo = FALSE}
-pal1 <-colorBin("Greens", bins = c(0, 5, 10, 15, 20, 25, 38),  domain = Municip$GPS)
-pal2 <-colorBin("Reds", bins = c(0, 5, 10, 15, 20, 25, 49),  domain = Municip$SP)
-pal3 <-colorBin("Blues", bins = c(0, 5, 10, 15, 20, 25, 69),  domain = Municip$FDP)
-pal4 <-colorBin("YlGn", bins = c(0, 10, 20, 30, 40, 50, 84),  domain =Municip$SVP)
-pal5 <-colorBin("Oranges", bins = c(0, 5, 10, 15, 20, 25, 79),  domain = Municip$CVP)
-pal6 <-colorBin("BuGn", bins = c(0, 5, 10, 15, 23),  domain = Municip$GLP)
+pal1 <-colorBin("Greens", bins = c(0, 5, 10, 15, 20, 25, 100),  domain = Municip$GPS)
+pal2 <-colorBin("Reds", bins = c(0, 5, 10, 15, 20, 25, 100),  domain = Municip$SP)
+pal3 <-colorBin("Blues", bins = c(0, 5, 10, 15, 20, 25, 100),  domain = Municip$FDP)
+pal4 <-colorBin("YlGn", bins = c(0, 10, 20, 30, 40, 50, 100),  domain =Municip$SVP)
+pal5 <-colorBin("Oranges", bins = c(0, 5, 10, 15, 20, 25, 100),  domain = Municip$CVP)
+pal6 <-colorBin("BuGn", bins = c(0, 5, 10, 15, 100),  domain = Municip$GLP)
+pal7 <-colorBin("YlOrRd", bins = c(0, 5, 10, 15,100),  domain = Municip$BDP)
+pal8 <-colorBin("BuPu", bins = c(0, 5, 10, 15,100),  domain = Municip$EVP)
 
+labelsGPS <-c("0 - 4.99", "5 - 9.99", "10 - 14.99","15 - 19.99", "20 - 24.99", "Over 25", "Nicht Angetreten")
+labelsSP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "15 - 19.99", "20 - 24.99", "Over 25", "Nicht Angetreten")
+labelsFDP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "15 - 19.99", "20 - 24.99", "Over 25", "Nicht Angetreten")
+labelsSVP <-c("0 - 9.99", "10 - 19.99", "20 - 29.99", "30 - 39.99", "40 - 49.99", "Over 50", "Nicht Angetreten")
+labelsCVP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "15 - 19.99", "20 - 24.99", "Over 25", "Nicht Angetreten")
+labelsGLP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "Over 15", "Nicht Angetreten")
+labelsBDP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "Over 15","Nicht Angetreten")
+labelsEVP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "Over 15","Nicht Angetreten")
 
-labelsGPS <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "15 - 19.99", "20 - 24.99", "Over 25")
-labelsSP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "15 - 19.99", "20 - 24.99", "Over 25")
-labelsFDP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "15 - 19.99", "20 - 24.99", "Over 25")
-labelsSVP <-c("0 - 9.99", "10 - 19.99", "20 - 29.99", "30 - 39.99", "40 - 49.99", "Over 50")
-labelsCVP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "15 - 19.99", "20 - 24.99", "Over 25")
-labelsGLP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "Over 15")
-
-
+contentGPS <-paste("<b>Gemeinde:</b>", MunicipVote$Name, "<br/>", 
+  "<b>Wahlergebnis GPS:</b>",round(MunicipVote$GPS, 2), "%")
+contentSP <-paste("<b>Gemeinde:</b>", MunicipVote$Name, "<br/>", 
+  "<b>Wahlergebnis SP:</b>",round(MunicipVote$SP, 2), "%")
+contentSVP <-paste("<b>Gemeinde:</b>", MunicipVote$Name, "<br/>", 
+  "<b>Wahlergebnis SVP:</b>",round(MunicipVote$SVP, 2), "%")
+contentFDP <-paste("<b>Gemeinde:</b>", MunicipVote$Name, "<br/>", 
+  "<b>Wahlergebnis FDP:</b>",round(MunicipVote$FDP, 2), "%")
+contentCVP <-paste("<b>Gemeinde:</b>", MunicipVote$Name, "<br/>", 
+  "<b>Wahlergebnis CVP:</b>",round(MunicipVote$CVP, 2), "%")
+contentGLP <-paste("<b>Gemeinde:</b>", MunicipVote$Name, "<br/>", 
+  "<b>Wahlergebnis GLP:</b>",round(MunicipVote$GLP, 2), "%")
+contentBDP <-paste("<b>Gemeinde:</b>", MunicipVote$Name, "<br/>", 
+  "<b>Wahlergebnis BDP:</b>",round(MunicipVote$BDP, 2), "%")
+contentEVP<-paste("<b>Gemeinde:</b>", MunicipVote$Name, "<br/>", 
+  "<b>Wahlergebnis EVP:</b>",round(MunicipVote$EVP, 2), "%")
 ```
 
 
@@ -85,33 +105,41 @@ labelsGLP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "Over 15")
 MunicipMAP <-leaflet(MunicipVote) %>% 
   addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
   addPolygons(weight = 0.5, color = "#d3d3d3", smoothFactor = 0.5, 
-              fillColor = ~pal1(GPS), fillOpacity = 0.8, group = "GPS") %>%
+              fillColor = ~pal1(GPS), fillOpacity = 0.8, popup = ~contentGPS, group = "GPS") %>%
   addPolygons(weight = 0.5, color = "#d3d3d3", smoothFactor = 0.5, 
-              fillColor = ~pal2(SP), fillOpacity = 0.8, group ="SP") %>% 
+              fillColor = ~pal2(SP), fillOpacity = 0.8, popup = ~contentSP, group ="SP") %>% 
   addPolygons(weight = 0.5, color = "#d3d3d3", smoothFactor = 0.5, 
-              fillColor = ~pal3(FDP), fillOpacity = 0.8, group ="FDP") %>% 
+              fillColor = ~pal3(FDP), fillOpacity = 0.8, popup = ~contentFDP, group ="FDP") %>% 
   addPolygons(weight = 0.5, color = "#d3d3d3", smoothFactor = 0.5, 
-              fillColor = ~pal4(SVP), fillOpacity = 0.8, group ="SVP") %>% 
+              fillColor = ~pal4(SVP), fillOpacity = 0.8, popup = ~contentSVP, group ="SVP") %>% 
   addPolygons(weight = 0.5, color = "#d3d3d3", smoothFactor = 0.5, 
-              fillColor = ~pal5(CVP), fillOpacity = 0.8, group ="CVP") %>% 
+              fillColor = ~pal5(CVP), fillOpacity = 0.8, popup = ~contentCVP, group ="CVP") %>% 
   addPolygons(weight = 0.5, color = "#d3d3d3", smoothFactor = 0.5, 
-              fillColor = ~pal6(GLP), fillOpacity = 0.8, group ="GLP") %>%
-  addLegend("topright", pal = pal1, values = ~GPS, title = "Vote Share Greens", 
+              fillColor = ~pal6(GLP), fillOpacity = 0.8, popup = ~contentGLP, group ="GLP") %>%
+  addPolygons(weight = 0.5, color = "#d3d3d3", smoothFactor = 0.5, 
+              fillColor = ~pal7(BDP), fillOpacity = 0.8, popup = ~contentBDP, group ="BDP") %>%
+  addPolygons(weight = 0.5, color = "#d3d3d3", smoothFactor = 0.5, 
+              fillColor = ~pal8(EVP), fillOpacity = 0.8, popup = ~contentEVP, group ="EVP") %>%
+  addLegend("topright", pal = pal1, values = ~GPS, title = "Wahlergebnis Greens", 
           opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsGPS)}, group="GPS")  %>%
- addLegend("topright", pal = pal2, values = ~SP, title = "Vote Share SP", 
+ addLegend("topright", pal = pal2, values = ~SP, title = "Wahlergebnis SP", 
           opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsSP)}, group="SP")  %>% 
-addLegend("topright", pal = pal3, values = ~FDP, title = "Vote Share FDP", 
+addLegend("topright", pal = pal3, values = ~FDP, title = "Wahlergebnis FDP", 
           opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsFDP)}, group="FDP")  %>%
-addLegend("topright", pal = pal4, values = ~SVP, title = "Vote Share SVP", 
+addLegend("topright", pal = pal4, values = ~SVP, title = "Wahlergebnis SVP", 
           opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsSVP)}, group="SVP")  %>% 
-  addLegend("topright", pal = pal5, values = ~CVP, title = "Vote Share CVP", 
+  addLegend("topright", pal = pal5, values = ~CVP, title = "Wahlergebnis CVP", 
           opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsCVP)}, group="CVP")  %>% 
-  addLegend("topright", pal = pal6, values = ~GLP, title = "Vote Share GLP", 
+  addLegend("topright", pal = pal6, values = ~GLP, title = "Wahlergebnis GLP", 
           opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsGLP)}, group="GLP")  %>% 
+addLegend("topright", pal = pal7, values = ~BDP, title = "Wahlergebnis BDP", 
+          opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsBDP)}, group="BDP")  %>% 
+addLegend("topright", pal = pal8, values = ~EVP, title = "Wahlergebnis EVP", 
+          opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsEVP)}, group="EVP")  %>% 
   addLayersControl(
-    overlayGroups = c("SVP", "SP", "FDP", "GPS", "CVP", "GLP"),
+    overlayGroups = c("SVP", "SP", "FDP", "GPS", "CVP", "GLP", "BDP", "EVP"),
     options = layersControlOptions(collapsed = TRUE))  %>%
-    hideGroup(c("SP", "FDP", "GPS", "CVP", "GLP"))
+    hideGroup(c("SP", "FDP", "GPS", "CVP", "GLP", "BDP", "EVP"))
 ```
 
 
