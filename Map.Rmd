@@ -1,0 +1,107 @@
+---
+title: "PolMaps"
+author: "Marco Radojevic"
+date: "July 23, 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Loading required Libraries
+```{r Libraries, echo = FALSE}
+library(tidyverse)
+library(leaflet)
+library(readxl)
+library(rgdal)
+library(magrittr)
+library(spdplyr)
+```
+
+
+Loading in the Shape File of Swiss Municipalities and Transforming it
+```{r Shape File, echo = FALSE}
+Swiss <-readOGR(dsn = "C:/Git-Hub/PolMap/Muncip/swissBOUNDARIES3D_1_3_TLM_HOHEITSGEBIET.dbf")
+PRO <- CRS('+proj=longlat +datum=WGS84 +ellps=WGS84 +towgs84=0,0,0')
+Swiss <-spTransform(Swiss, PRO)
+
+```
+
+Drop Lichtenstein out of the Shape File
+```{r Drop Lichtenstein, echo = FALSE}
+Swiss <- Swiss[ grep("CH", Swiss$SHN) , ]
+```
+
+```{r Read in Data, echo = FALSE}
+#Load Data and clean to make xlsx usable in R
+Municip <- as.tibble(read_xlsx("C:/Git-Hub/PolMap/Data/Municip.xlsx", skip=5))
+Municip <- slice(Municip, 4:n())
+
+#Rename Variables
+Municip <- rename(Municip, BFS_NUMMER = `Number of commune`)
+Municip <- rename(Municip, Name = `Name of commune`)
+Municip <- rename(Municip, FDP = `FDP/PLR 4)`)
+
+#Transform Party Variables to Numeric 
+Municip$SP %<>% as.integer
+Municip$CVP %<>% as.integer
+Municip$SVP %<>% as.integer
+Municip$GLP %<>% as.integer
+Municip$GPS %<>% as.integer
+Municip$BDP %<>% as.integer
+Municip$FDP %<>% as.integer
+```
+
+
+```{r Merge Data and Map, echo = FALSE}
+MunicipVote  <-merge(Swiss, Municip, by = "BFS_NUMMER")
+```
+
+
+
+```{r Create Color Overlays, echo = FALSE}
+pal1 <-colorBin("Greens", bins = c(0, 5, 10, 15, 20, 25, 38),  domain = Municip$GPS)
+pal2 <-colorBin("Reds", bins = c(0, 5, 10, 15, 20, 25, 49),  domain = Municip$SP)
+pal3 <-colorBin("Blues", bins = c(0, 5, 10, 15, 20, 25, 69),  domain = Municip$FDP)
+pal4 <-colorBin("YlGn", bins = c(0, 10, 20, 30, 40, 50, 84),  domain =Municip$SVP)
+pal5 <-colorBin("Oranges", bins = c(0, 5, 10, 15, 20, 25, 79),  domain = Municip$CVP)
+pal6 <-colorBin("BuGn", bins = c(0, 5, 10, 15, 23),  domain = Municip$GLP)
+
+
+labelsGPS <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "15 - 19.99", "20 - 24.99", "Over 25")
+labelsSP <-c("0 - 4.99", "5 - 9.99", "10 - 14.99", "15 - 19.99", "20 - 24.99", "Over 25")
+
+```
+
+
+```{r Create Map, echo = FALSE}
+MunicipMAP <-leaflet(MunicipVote) %>% 
+  addProviderTiles(providers$Esri.WorldGrayCanvas) %>% 
+  addPolygons(weight = 0.5, color = "#d3d3d3", smoothFactor = 0.5, 
+              fillColor = ~pal1(GPS), fillOpacity = 0.8, group = "GPS") %>%
+  addPolygons(weight = 0.5, color = "#d3d3d3", smoothFactor = 0.5, 
+              fillColor = ~pal2(SP), fillOpacity = 0.8, group ="SP") %>% 
+  addPolygons(weight = 0.5, color = "#d3d3d3", smoothFactor = 0.5, 
+              fillColor = ~pal3(FDP), fillOpacity = 0.8, group ="FDP") %>% 
+  addPolygons(weight = 0.5, color = "#d3d3d3", smoothFactor = 0.5, 
+              fillColor = ~pal4(SVP), fillOpacity = 0.8, group ="SVP") %>% 
+  addPolygons(weight = 0.5, color = "#d3d3d3", smoothFactor = 0.5, 
+              fillColor = ~pal5(CVP), fillOpacity = 0.8, group ="CVP") %>% 
+  addPolygons(weight = 0.5, color = "#d3d3d3", smoothFactor = 0.5, 
+              fillColor = ~pal6(GLP), fillOpacity = 0.8, group ="GLP") %>%
+  addLegend("topright", pal = pal1, values = ~GPS, title = "Vote Share Greens", 
+          opacity= 1, labFormat = function(type, cuts, p) {paste0(labelsGPS)}, group="GPS")  %>%
+  addLayersControl(
+    baseGroups = c("SVP", "SP", "FDP", "GPS", "CVP", "GLP"),
+    options = layersControlOptions(collapsed = FALSE))
+```
+
+
+
+```{r Plot Map, echo = FALSE}
+MunicipMAP
+```
+
+
